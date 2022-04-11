@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for var in 1 2 3 4 5 6 7 8 9
+   do
+      echo $var
+      sleep 1
+done
