@@ -26,7 +26,7 @@ current_binlog=`mysql -u $db_user -e "show master status" | egrep "binlog.[[:dig
 #1 刷新binlog,用flush logs命令，刷新完成后，就会生成一个新的binlog，旧的binlog里面不再写日志，这样就可以备份旧的日志，新日志不会写入
 mysql -u $db_user -e "flush logs"
 #2 打包要备份binlog
-tar zcf `data +%F`.binlog.tar.gz $binlog_dir/$current_binlog
+tar zcf `data +%F`.binlog.tar.gz $binlog_dir/$current_binlog &>/dev/null 2>&1
 #3 用mds5sum对生成的压缩包进行校验，并且输出到txt文件
 md5sum `data +%F`.binlog.tar.gz > `data +%F`_md5sum.txt
 #4 存入文件夹
@@ -38,7 +38,7 @@ tar zcf `data +%F`.tar.gz `data +%F`
 
 #5，拷贝
 #要求提前做证书信任
-scp `data +%F`.tar.gz root@$backup_server:$backup_dir
+scp `data +%F`.tar.gz root@$backup_server:$backup_dir &>/dev/null 2>&1
 
 if [ $? -ne 0 ];then
    echo "ERROR: scp `data +%F`.tar.gz fail"
@@ -47,8 +47,8 @@ fi
 
 #6，校验
 #需要解压缩到指定目录，要不然会默认解压到当前目录，导致后面的内容无法执行
-ssh root@$backup_server "tar xf $backup_dir/`date +%F`.tar.gz -C $backup_dir"
-ssh root@$backup_server "cd $backup_dir/`date +%F`;md5sum -c `date +%F`_md5sum.txt "
+ssh root@$backup_server "tar xf $backup_dir/`date +%F`.tar.gz -C $backup_dir &>/dev/null 2>&1"
+ssh root@$backup_server "cd $backup_dir/`date +%F`;md5sum -c `date +%F`_md5sum.txt &>/dev/null 2>&1"
 #md5sum需要先cd到文件所在目录，才可以执行md5sum，否则会找不到文件，且要在一条命令里面执行
 
 if [ $? -eq 0 ];then
